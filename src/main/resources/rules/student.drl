@@ -1,0 +1,11 @@
+package com.student;
+
+import com.learn.learnspringdrools.drools.entity.Student
+
+rule "rule_1"
+    when
+        $s: com.learn.learnspringdrools.drools.entity.Student(age <18 && name!=null)
+    then
+        $s.setAddress("beijing");
+        System.out.println("本地 rule_1 start...");
+end

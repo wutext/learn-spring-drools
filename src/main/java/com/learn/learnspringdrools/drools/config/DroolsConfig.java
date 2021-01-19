@@ -16,7 +16,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.io.Resource;
 import java.io.IOException;
 /**
- * 规则引擎配置类
+ * 规则引擎配置类,适用于加载项目中的drl文件
  */
 @Configuration
 public class DroolsConfig {
@@ -55,6 +55,7 @@ public class DroolsConfig {
     public KieBase kieBase() throws IOException {
         return kieContainer().getKieBase();
     }
+
     @Bean
     @ConditionalOnMissingBean
     public KModuleBeanFactoryPostProcessor kiePostProcessor() {

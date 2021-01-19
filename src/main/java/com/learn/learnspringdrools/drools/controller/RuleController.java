@@ -9,8 +9,9 @@ import com.learn.learnspringdrools.drools.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequestMapping("/rule")
@@ -42,4 +43,10 @@ public class RuleController {
     public Student getStudent() {
         return studentService.getStudent();
     }
+
+    @RequestMapping("/getFileStudent")
+    public Student getFileStudent() {
+        return studentService.getFileSystemStudent("com.student");
+    }
+
 }
