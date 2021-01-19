@@ -1,0 +1,147 @@
+package creditCardApply
+import com.learn.learnspringdrools.drools.entity.CreditCardApplyInfo
+
+//当前规则文件负责处理两类规则: 用户信息合法性检查、确定信用卡额度
+
+//用户合法性检查:
+//如果申请人没房没车，大专学历以下, 并且月薪少于5000，不通过
+rule "creditCardApply_check_1"
+    salience 100
+    no-loop true
+    when
+        $c: CreditCardApplyInfo(hasHouse==false && hasCar==false && education==CreditCardApplyInfo.EDUCATION_1 && monthlyIncome<5000)
+    then
+        $c.setCheckResult(false); //不通过
+        System.out.println("creditCardApply_check_1");
+        drools.halt(); //不再继续执行
+end
+
+//用户合法性检查: 如果申请人没房没车，大专或本科，并且月薪少于3000，不通过
+rule "creditCardApply_check_2"
+    salience 100
+    no-loop true
+    when
+        $c: CreditCardApplyInfo(hasHouse==false && hasCar==false && (education==CreditCardApplyInfo.EDUCATION_3 || education==CreditCardApplyInfo.EDUCATION_2) && monthlyIncome<3000)
+    then
+        $c.setCheckResult(false); //不通过
+        System.out.println("creditCardApply_check_2");
+        drools.halt(); //不再继续执行
+end
+
+//用户合法性检查: 如果申请人没房没车，本科学历， 并且月薪少于2000，没办过信用卡，不通过
+rule "creditCardApply_check_3"
+    salience 100
+    no-loop true
+    when
+        $c: CreditCardApplyInfo(hasHouse==false && hasCar==false && education==CreditCardApplyInfo.EDUCATION_3 && monthlyIncome<2000 && hasCreditCardCount==0)
+    then
+        $c.setCheckResult(false); //不通过
+        System.out.println("creditCardApply_check_3");
+        drools.halt(); //不再继续执行
+end
+
+//现有申请数量大于10，不通过
+rule "creditCardApply_check_4"
+    salience 100
+    no-loop true
+    when
+        $c: CreditCardApplyInfo(hasCreditCardCount>10)
+    then
+        $c.setCheckResult(false); //不通过
+        System.out.println("creditCardApply_check_4");
+        drools.halt(); //不再继续执行
+end
+
+//审核通过，审核信用卡额度>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//确定信用卡规则5个 : 有房有车，收入>20000
+rule "creditCardApply_quota_1"
+    salience 20
+    no-loop true
+    activation-group "creditCardApply_quota"
+    when
+        $c: CreditCardApplyInfo(checkResult==true && (hasCar==true && hasHouse==true) || monthlyIncome>=20000)
+    then
+        $c.setQuota(15000);
+        System.out.println("creditCardApply_quota_1");
+end
+
+//没房没车，收入10000~20000， 额度：6000
+rule "creditCardApply_quota_2"
+    salience 20
+    no-loop true
+    activation-group "creditCardApply_quota"
+    when
+        $c: CreditCardApplyInfo(checkResult==true
+                                && hasCar==false && hasHouse==false
+                                && monthlyIncome>=10000 && monthlyIncome<20000)
+    then
+        $c.setQuota(6000);
+        System.out.println("creditCardApply_quota_2");
+end
+
+//没房没车，月收入<10000, 额度： 3000
+rule "creditCardApply_quota_3"
+    salience 20
+    no-loop true
+    activation-group "creditCardApply_quota"
+    when
+        $c: CreditCardApplyInfo(checkResult==true
+                                && hasCar==false && hasHouse==false
+                                && monthlyIncome<10000)
+    then
+        $c.setQuota(3000);
+        System.out.println("creditCardApply_quota_3");
+end
+
+//有房没车，或有车没房，收入<10000, edu : 5000
+rule "creditCardApply_quota_4"
+    salience 20
+    no-loop true
+    activation-group "creditCardApply_quota"
+    when
+        $c: CreditCardApplyInfo(checkResult==true
+                                        && ((hasCar==true && hasHouse==false) || (hasCar==false && hasHouse==true))
+                                        && monthlyIncome<10000)
+    then
+        $c.setQuota(5000);
+        System.out.println("creditCardApply_quota_4");
+end
+
+//有房没车，或有车没房，收入10000~20000，额度： 8000
+rule "creditCardApply_quota_5"
+    salience 20
+    no-loop true
+    activation-group "creditCardApply_quota"
+    when
+         $c: CreditCardApplyInfo(checkResult==true
+                                                && ((hasCar==true && hasHouse==false) || (hasCar==false && hasHouse==true))
+                                                && (monthlyIncome>10000 && monthlyIncome <20000))
+    then
+         $c.setQuota(8000);
+         System.out.println("creditCardApply_quota_5");
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

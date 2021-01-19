@@ -1,0 +1,135 @@
+package calculation
+import com.learn.learnspringdrools.drools.entity.Calculation
+
+/**
+    当前文件中的规则主要分为第三类
+        1. 计算应纳税额所得额
+        2. 设置税率，速算扣除数， 有7个规则
+        3. 计算税后工资
+**/
+
+//计算应纳税所得额
+rule "calculation_of_taxable_income"
+    salience 100
+    date-effective "2011-09-01"
+    no-loop true
+    when
+        $cal: Calculation(wage > 0) //税前工资必须大于0
+    then
+        double wageMore = $cal.getWage()-3500;
+        $cal.setWageMore(wageMore);
+        update($cal);
+        System.out.println("calculation_of_taxable_income...");
+end
+
+//设置税率，1. 应纳说所得额: wageMore <=1500
+rule "calculation_of_taxable_income_gl_1500"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore <=1500) //应纳说所得额 <=1500
+    then
+        $cal.setRate(0.03);
+        $cal.setPreMinus(0);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_gl_1500...");
+end
+
+//设置税率，2. 应纳说所得额: 1500>= wageMore <= 4500
+rule "calculation_of_taxable_income_1500_4500"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore >1500 && wageMore <=4500) //应纳说所得额
+    then
+        $cal.setRate(0.1);
+        $cal.setPreMinus(105);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_1500_4500...");
+end
+
+//设置税率，3. 应纳说所得额: 4500< wageMore <= 9000
+rule "calculation_of_taxable_income_4500_9000"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore >4500 && wageMore <=9000) //应纳说所得额
+    then
+        $cal.setRate(0.2);
+        $cal.setPreMinus(555);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_4500_9000...");
+end
+
+//设置税率，4. 应纳说所得额: 9000< wageMore <= 35000
+rule "calculation_of_taxable_income_9000_35000"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore >9000 && wageMore <=35000) //应纳说所得额
+    then
+        $cal.setRate(0.25);
+        $cal.setPreMinus(1005);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_9000_35000...");
+end
+
+//设置税率，5. 应纳说所得额: 35000< wageMore <= 55000
+rule "calculation_of_taxable_income_35000_55000"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore >35000 && wageMore <=55000) //应纳说所得额
+    then
+        $cal.setRate(0.3);
+        $cal.setPreMinus(2755);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_35000_55000...");
+end
+
+//设置税率，6. 应纳说所得额: 55000< wageMore <= 80000
+rule "calculation_of_taxable_income_55000_80000"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore >55000 && wageMore <=80000) //应纳说所得额
+    then
+        $cal.setRate(0.35);
+        $cal.setPreMinus(5505);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_55000_80000...");
+end
+
+//设置税率，7. 应纳说所得额: 9000< wageMore <= 9000
+rule "calculation_of_taxable_income_gt_80000"
+    salience 90
+    no-loop true
+    activation-group "rate_group"
+    when
+        $cal: Calculation(wageMore >80000) //应纳说所得额
+    then
+        $cal.setRate(0.45);
+        $cal.setPreMinus(13505);
+        update($cal);
+        System.out.println("calculation_of_taxable_income_gt_80000...");
+end
+
+rule "calculate_after_tax_wages"
+    salience 80
+    when
+        $cal: Calculation(wage >0 && wageMore>0 && rate >0)
+    then
+        //扣除税
+        //WorkingMemory workingMemory = drools.getWorkingMemory();
+        double wageMinus = $cal.getWageMore() * $cal.getRate()-$cal.getPreMinus();
+        double actualWage = $cal.getWage()-wageMinus;
+        $cal.setWageMinus(wageMinus);
+        $cal.setActualWage(actualWage);
+        System.out.println("计算后的结果是:"+$cal);
+end
